@@ -21,23 +21,22 @@ jobs:
           sudo npm install -g snyk
           snyk auth ${SNYK_TOKEN}
       
-      # Run Snyk Code and Generate SARIF - with all issues
+      # Run Snyk Code and Generate SARIF - always generate the file
       - name: Run Snyk Code and Generate SARIF
+        id: snyk-sarif
         run: |
           # Run with all issues captured for SARIF output
-          snyk code test --json --sarif-file-output=snyk.sarif || echo "Issues found, but continuing"
+          snyk code test --sarif-file-output=snyk.sarif
         continue-on-error: true
-
-      # Upload SARIF to GitHub Code Scanning
+      
+      # Upload SARIF to GitHub Code Scanning - always runs
       - name: Upload SARIF to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
       
-      # Run Snyk Code with critical threshold for pipeline status
-      - name: Run Snyk Code with Critical Threshold
+      # Run Snyk Code with critical threshold for pipeline status - last step
+      - name: Check for Critical Vulnerabilities
         run: |
           # Run with critical severity threshold for pass/fail status
           snyk code test --severity-threshold=critical
-      
-
