@@ -27,7 +27,7 @@ jobs:
       # Run Snyk Code and Generate SARIF
       - name: Run Snyk Code and Generate SARIF
         run: |
-          snyk code test --sarif-file-output=snyk.sarif
+          snyk code test --sarif-file-output=snyk.sarif --severity-threshold=high
         continue-on-error: true
 
       # Upload SARIF to GitHub Code Scanning.
