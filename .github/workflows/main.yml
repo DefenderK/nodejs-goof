@@ -1,10 +1,8 @@
 name: "Snyk Scan"
-
 on:
   push:
     branches:
       - 'demo*' # Include any branch starting with demo
-
 jobs:
   Pipeline-Job:
     # Configure Environment
@@ -12,27 +10,32 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
     steps:
       # Checkout Code
       - name: Checkout Code
         uses: actions/checkout@v1
-
+      
       # Install and Authenticate to Snyk
       - name: Install Snyk & Authenticate
         run: |
           sudo npm install -g snyk
           snyk auth ${SNYK_TOKEN}
-
-      # Run Snyk Code and Generate SARIF
+      
+      # Run Snyk Code and Generate SARIF - with all issues
       - name: Run Snyk Code and Generate SARIF
         run: |
-          snyk code test --sarif-file-output=snyk.sarif --fail-on=critical # or --fail-on=critical or --fail-on=high,critical
+          # Run with all issues captured for SARIF output
+          snyk code test --json --sarif-file-output=snyk.sarif || echo "Issues found, but continuing"
         continue-on-error: true
-
-      # Upload SARIF to GitHub Code Scanning.
+      
+      # Run Snyk Code with critical threshold for pipeline status
+      - name: Run Snyk Code with Critical Threshold
+        run: |
+          # Run with critical severity threshold for pass/fail status
+          snyk code test --severity-threshold=critical
+      
+      # Upload SARIF to GitHub Code Scanning
       - name: Upload SARIF to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk.sarif
-
