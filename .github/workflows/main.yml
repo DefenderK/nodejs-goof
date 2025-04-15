@@ -39,4 +39,4 @@ jobs:
       - name: Check for Critical Vulnerabilities
         run: |
           # Run with critical severity threshold for pass/fail status
-          snyk code test --severity-threshold=critical
+          snyk code test --severity-threshold=high
