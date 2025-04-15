@@ -3,7 +3,7 @@ name: "Snyk Scan"
 on:
   push:
     branches:
-      - 'demo*'  # Include any branch starting with demo
+      - 'demo*' # Include any branch starting with demo
 
 jobs:
   Pipeline-Job:
@@ -22,20 +22,17 @@ jobs:
       - name: Install Snyk & Authenticate
         run: |
           sudo npm install -g snyk
-          sudo npm install -g snyk-delta
-          sudo npm install -g snyk-filter
           snyk auth ${SNYK_TOKEN}
-      # Run Snyk Code
-      - name: Run Snyk Code
+
+      # Run Snyk Code and Generate SARIF
+      - name: Run Snyk Code and Generate SARIF
         run: |
-          snyk code test --report --project-name="GH_ACTION_CI" --severity-threshold=high 
+          snyk code test --sarif-file-output=snyk.sarif
         continue-on-error: true
-      # Run Snyk OS
-      - name: Run Snyk OS Delta
-        run: |
-          snyk test --json --print-deps | snyk-delta --baselineOrg 6d36ac7a-c75b-4179-8e73-6dd4d3fc8343 --baselineProject 17a2bb65-9e50-4277-9f0e-612006e9347a --setPassIfNoBaseline true
-        continue-on-error: true
-      - name: Run Snyk OS CVSS 9 or >
-        run: |
-          snyk test --json | snyk-filter -f ${{ github.workspace }}/filters/example-cvss-9-or-above.yml --Org=6d36ac7a-c75b-4179-8e73-6dd4d3fc8343
-        continue-on-error: true
+
+      # Upload SARIF to GitHub Code Scanning
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
+
