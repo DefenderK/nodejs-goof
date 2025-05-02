@@ -36,7 +36,7 @@ exports.index = function (req, res, next) {
 
 // Vulnerable code:
 
-
+/*
 exports.loginHandler = function (req, res, next) {
   if (validator.isEmail(req.body.username)) {
     User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
@@ -69,9 +69,10 @@ if (validator.isEmail(req.body.username)) {
 } else {
   return res.status(401).send()
 };
+*/
 
 // Fixed code: validator.escape() is used to sanitize the input parameters (username and password) before using them in the database query.
-/*
+
 exports.loginHandler = function (req, res, next) {
   // Validate if the username is in email format
   if (validator.isEmail(req.body.username)) {
@@ -99,7 +100,7 @@ exports.loginHandler = function (req, res, next) {
     return res.status(401).send("Unauthorized");
   }
 };
-*/
+
 
 function adminLoginSuccess(redirectPage, session, username, res) {
   session.loggedIn = 1
@@ -238,48 +239,40 @@ exports.create = function (req, res, next) {
 };
 
 // Insert new vulnerable code:
-/*
-exports.destroy = function (req, res, next) {
-  Todo.findById(req.params.id, function (err, todo) {
 
-    try {
-      todo.remove(function (err, todo) {
-        if (err) return next(err);
-        res.redirect('/');
-      });
-    } catch (e) {
+exports.loginHandler = function (req, res, next) {
+  if (validator.isEmail(req.body.username)) {
+    User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
+      if (users.length > 0) {
+        const redirectPage = req.body.redirectPage
+        const session = req.session
+        const username = req.body.username
+        return adminLoginSuccess(redirectPage, session, username, res)
+      } else {
+        return res.status(401).send()
+      }
+    });
+  } else {
+    return res.status(401).send()
+  }
+};
+
+
+if (validator.isEmail(req.body.username)) {
+  User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
+    if (users.length > 0) {
+      const redirectPage = req.body.redirectPage
+      const session = req.session
+      const username = req.body.username
+      return adminLoginSuccess(redirectPage, session, username, res)
+    } else {
+      return res.status(401).send()
     }
   });
+} else {
+  return res.status(401).send()
 };
 
-exports.edit = function (req, res, next) {
-  Todo.
-    find({}).
-    sort('-updated_at').
-    exec(function (err, todos) {
-      if (err) return next(err);
-
-      res.render('edit', {
-        title: 'TODO',
-        todos: todos,
-        current: req.params.id
-      });
-    });
-};
-
-exports.update = function (req, res, next) {
-  Todo.findById(req.params.id, function (err, todo) {
-
-    todo.content = req.body.content;
-    todo.updated_at = Date.now();
-    todo.save(function (err, todo, count) {
-      if (err) return next(err);
-
-      res.redirect('/');
-    });
-  });
-};
-*/
 
 // ** express turns the cookie key to lowercase **
 exports.current_user = function (req, res, next) {

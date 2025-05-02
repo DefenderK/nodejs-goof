@@ -26,6 +26,7 @@ var cons = require('consolidate');
 const hbs = require('hbs')
 
 var app = express();
+app.use(csurf());
 var routes = require('./routes');
 var routesUsers = require('./routes/users.js')
 
