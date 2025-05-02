@@ -9,7 +9,6 @@ ignore:
         reason: Not an issue for our environment!
         expires: 2025-12-20T15:39:49.338Z
         created: 2024-11-20T15:39:49.343Z
-patch: {}
 exclude:
   global:
     - app.js
