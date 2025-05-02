@@ -36,7 +36,7 @@ exports.index = function (req, res, next) {
 
 // Insert new vulnerable code:
 
-/*
+
 exports.loginHandler = function (req, res, next) {
   if (validator.isEmail(req.body.username)) {
     User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
@@ -69,7 +69,7 @@ if (validator.isEmail(req.body.username)) {
 } else {
   return res.status(401).send()
 };
-*/
+
 // Fixed code: validator.escape() is used to sanitize the input parameters (username and password) before using them in the database query.
 
 exports.loginHandler = function (req, res, next) {
@@ -174,7 +174,7 @@ exports.get_account_details = function(req, res, next) {
 }
 
 // New NoSQL Injection vulnerability - added for Snyk testing
-/*
+
 exports.getUserById = function(req, res, next) {
   // Get the user ID from query parameters
   const userId = req.query.id;
@@ -194,7 +194,7 @@ exports.getUserById = function(req, res, next) {
     });
   });
 };
-*/
+
 
 exports.save_account_details = function(req, res, next) {
   // get the profile details from the JSON
