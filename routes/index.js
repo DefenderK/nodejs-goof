@@ -34,7 +34,7 @@ exports.index = function (req, res, next) {
     });
 };
 
-// Vulnerable code:
+// Insert new vulnerable code:
 
 
 exports.loginHandler = function (req, res, next) {
@@ -135,6 +135,29 @@ exports.get_account_details = function(req, res, next) {
   const profile = {}
  	return res.render('account.hbs', profile)
 }
+
+// New NoSQL Injection vulnerability - added for Snyk testing
+/*
+exports.getUserById = function(req, res, next) {
+  // Get the user ID from query parameters
+  const userId = req.query.id;
+  
+  // Directly use user input in MongoDB operator without sanitization
+  // This is vulnerable if userId is something like: {"$ne": null}
+  User.findOne({_id: userId}, function(err, user) {
+    if (err) return next(err);
+    
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    
+    return res.render('user_profile', {
+      title: 'User Profile',
+      user: user
+    });
+  });
+};
+*/
 
 exports.save_account_details = function(req, res, next) {
   // get the profile details from the JSON
@@ -238,7 +261,7 @@ exports.create = function (req, res, next) {
 };
 
 // Insert new vulnerable code:
-/*
+
 exports.destroy = function (req, res, next) {
   Todo.findById(req.params.id, function (err, todo) {
 
@@ -279,7 +302,7 @@ exports.update = function (req, res, next) {
     });
   });
 };
-*/
+
 
 // ** express turns the cookie key to lowercase **
 exports.current_user = function (req, res, next) {
