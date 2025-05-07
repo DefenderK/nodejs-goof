@@ -136,42 +136,6 @@ exports.get_account_details = function(req, res, next) {
  	return res.render('account.hbs', profile)
 }
 
-// New NoSQL Injection vulnerability - added for Snyk testing
-/*
-exports.loginHandler = function (req, res, next) {
-  if (validator.isEmail(req.body.username)) {
-    User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
-      if (users.length > 0) {
-        const redirectPage = req.body.redirectPage
-        const session = req.session
-        const username = req.body.username
-        return adminLoginSuccess(redirectPage, session, username, res)
-      } else {
-        return res.status(401).send()
-      }
-    });
-  } else {
-    return res.status(401).send()
-  }
-};
-
-
-if (validator.isEmail(req.body.username)) {
-  User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
-    if (users.length > 0) {
-      const redirectPage = req.body.redirectPage
-      const session = req.session
-      const username = req.body.username
-      return adminLoginSuccess(redirectPage, session, username, res)
-    } else {
-      return res.status(401).send()
-    }
-  });
-} else {
-  return res.status(401).send()
-};
-*/
-
 exports.save_account_details = function(req, res, next) {
   // get the profile details from the JSON
 	const profile = req.body
@@ -302,7 +266,6 @@ exports.edit = function (req, res, next) {
       });
     });
 };
-*/
 
 exports.update = function (req, res, next) {
   Todo.findById(req.params.id, function (err, todo) {
@@ -316,7 +279,7 @@ exports.update = function (req, res, next) {
     });
   });
 };
-
+*/
 
 // ** express turns the cookie key to lowercase **
 exports.current_user = function (req, res, next) {
