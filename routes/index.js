@@ -36,7 +36,6 @@ exports.index = function (req, res, next) {
 
 // Vulnerable code:
 
-
 exports.loginHandler = function (req, res, next) {
   if (validator.isEmail(req.body.username)) {
     User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
@@ -238,7 +237,7 @@ exports.create = function (req, res, next) {
 };
 
 // Insert new vulnerable code:
-/*
+
 exports.destroy = function (req, res, next) {
   Todo.findById(req.params.id, function (err, todo) {
 
@@ -279,7 +278,7 @@ exports.update = function (req, res, next) {
     });
   });
 };
-*/
+
 
 // ** express turns the cookie key to lowercase **
 exports.current_user = function (req, res, next) {
@@ -357,6 +356,24 @@ exports.about_new = function (req, res, next) {
       device: req.query.device
     });
 };
+
+/*
+// 🚨 NoSQL Injection Vulnerability: Directly using user input as query
+exports.vulnerable_nosql_injection = function (req, res, next) {
+  const query = req.body || {};
+  
+  // This is dangerous: attacker can send {"$ne": null} to bypass auth
+  User.findOne(query, function (err, user) {
+    if (err) return next(err);
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    return res.status(200).send("Welcome " + user.username);
+  });
+};
+*/
+
+
 
 // Prototype Pollution
 
