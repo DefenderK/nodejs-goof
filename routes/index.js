@@ -357,21 +357,7 @@ exports.about_new = function (req, res, next) {
     });
 };
 
-/*
-// 🚨 NoSQL Injection Vulnerability: Directly using user input as query
-exports.vulnerable_nosql_injection = function (req, res, next) {
-  const query = req.body || {};
-  
-  // This is dangerous: attacker can send {"$ne": null} to bypass auth
-  User.findOne(query, function (err, user) {
-    if (err) return next(err);
-    if (!user) {
-      return res.status(404).send("User not found");
-    }
-    return res.status(200).send("Welcome " + user.username);
-  });
-};
-*/
+// Add new Vulnerable code:
 
 
 
