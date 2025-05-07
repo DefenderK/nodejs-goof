@@ -236,8 +236,6 @@ exports.create = function (req, res, next) {
   });
 };
 
-// Insert new vulnerable code:
-
 exports.destroy = function (req, res, next) {
   Todo.findById(req.params.id, function (err, todo) {
 
