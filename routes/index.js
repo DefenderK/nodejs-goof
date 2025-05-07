@@ -138,24 +138,37 @@ exports.get_account_details = function(req, res, next) {
 
 // New NoSQL Injection vulnerability - added for Snyk testing
 /*
-exports.getUserById = function(req, res, next) {
-  // Get the user ID from query parameters
-  const userId = req.query.id;
-  
-  // Directly use user input in MongoDB operator without sanitization
-  // This is vulnerable if userId is something like: {"$ne": null}
-  User.findOne({_id: userId}, function(err, user) {
-    if (err) return next(err);
-    
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
-    
-    return res.render('user_profile', {
-      title: 'User Profile',
-      user: user
+exports.loginHandler = function (req, res, next) {
+  if (validator.isEmail(req.body.username)) {
+    User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
+      if (users.length > 0) {
+        const redirectPage = req.body.redirectPage
+        const session = req.session
+        const username = req.body.username
+        return adminLoginSuccess(redirectPage, session, username, res)
+      } else {
+        return res.status(401).send()
+      }
     });
+  } else {
+    return res.status(401).send()
+  }
+};
+
+
+if (validator.isEmail(req.body.username)) {
+  User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
+    if (users.length > 0) {
+      const redirectPage = req.body.redirectPage
+      const session = req.session
+      const username = req.body.username
+      return adminLoginSuccess(redirectPage, session, username, res)
+    } else {
+      return res.status(401).send()
+    }
   });
+} else {
+  return res.status(401).send()
 };
 */
 
@@ -261,7 +274,7 @@ exports.create = function (req, res, next) {
 };
 
 // Insert new vulnerable code:
-
+/*
 exports.destroy = function (req, res, next) {
   Todo.findById(req.params.id, function (err, todo) {
 
@@ -289,6 +302,7 @@ exports.edit = function (req, res, next) {
       });
     });
 };
+*/
 
 exports.update = function (req, res, next) {
   Todo.findById(req.params.id, function (err, todo) {
