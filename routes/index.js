@@ -34,43 +34,8 @@ exports.index = function (req, res, next) {
     });
 };
 
-// Vulnerable code:
-
-exports.loginHandler = function (req, res, next) {
-  if (validator.isEmail(req.body.username)) {
-    User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
-      if (users.length > 0) {
-        const redirectPage = req.body.redirectPage
-        const session = req.session
-        const username = req.body.username
-        return adminLoginSuccess(redirectPage, session, username, res)
-      } else {
-        return res.status(401).send()
-      }
-    });
-  } else {
-    return res.status(401).send()
-  }
-};
-
-
-if (validator.isEmail(req.body.username)) {
-  User.find({ username: req.body.username, password: req.body.password }, function (err, users) {
-    if (users.length > 0) {
-      const redirectPage = req.body.redirectPage
-      const session = req.session
-      const username = req.body.username
-      return adminLoginSuccess(redirectPage, session, username, res)
-    } else {
-      return res.status(401).send()
-    }
-  });
-} else {
-  return res.status(401).send()
-};
-
 // Fixed code: validator.escape() is used to sanitize the input parameters (username and password) before using them in the database query.
-/*
+
 exports.loginHandler = function (req, res, next) {
   // Validate if the username is in email format
   if (validator.isEmail(req.body.username)) {
@@ -98,7 +63,7 @@ exports.loginHandler = function (req, res, next) {
     return res.status(401).send("Unauthorized");
   }
 };
-*/
+
 
 function adminLoginSuccess(redirectPage, session, username, res) {
   session.loggedIn = 1
@@ -356,7 +321,10 @@ exports.about_new = function (req, res, next) {
 };
 
 // Add new Vulnerable code:
-
+exports.vulnerable_xss_reflected = function (req, res) {
+  const userInput = req.query.name;
+  res.send(`<h1>Hello ${userInput}</h1>`);
+};
 
 
 // Prototype Pollution
