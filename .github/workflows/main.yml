@@ -12,6 +12,8 @@ jobs:
       contents: read # for actions/checkout to fetch code
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
       actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+      pull-requests: write # for commenting on PRs
+      checks: write # for creating check runs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,6 +66,8 @@ jobs:
         with:
           sarif_file: snyk-code.sarif
           category: snyk-code
+          # This will show results on PRs
+          checkout_path: ${{ github.workspace }}
         if: always() # Upload results even if previous steps failed
       
       # Upload Snyk Open Source SARIF results to GitHub Code Scanning
@@ -72,4 +76,74 @@ jobs:
         with:
           sarif_file: snyk-opensource.sarif
           category: snyk-opensource
+          # This will show results on PRs
+          checkout_path: ${{ github.workspace }}
         if: always() # Upload results even if previous steps failed
+      
+      # Create PR comment with Snyk results summary
+      - name: Comment PR with Snyk results
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request' && always()
+        with:
+          script: |
+            const fs = require('fs');
+            let comment = '## 🛡️ Snyk Security Scan Results\n\n';
+            
+            // Parse Snyk Code results
+            try {
+              if (fs.existsSync('snyk-code.sarif')) {
+                const codeResults = JSON.parse(fs.readFileSync('snyk-code.sarif', 'utf8'));
+                const codeIssues = codeResults.runs?.[0]?.results?.length || 0;
+                comment += `### 📝 Snyk Code (SAST)\n`;
+                comment += codeIssues > 0 
+                  ? `🔴 **${codeIssues} code security issues found**\n\n`
+                  : `✅ **No code security issues found**\n\n`;
+              }
+            } catch (e) {
+              comment += `### 📝 Snyk Code (SAST)\n❌ **Scan failed or no results**\n\n`;
+            }
+            
+            // Parse Snyk Open Source results
+            try {
+              if (fs.existsSync('snyk-opensource.sarif')) {
+                const osResults = JSON.parse(fs.readFileSync('snyk-opensource.sarif', 'utf8'));
+                const osIssues = osResults.runs?.[0]?.results?.length || 0;
+                comment += `### 📦 Snyk Open Source (SCA)\n`;
+                comment += osIssues > 0 
+                  ? `🔴 **${osIssues} dependency vulnerabilities found**\n\n`
+                  : `✅ **No dependency vulnerabilities found**\n\n`;
+              }
+            } catch (e) {
+              comment += `### 📦 Snyk Open Source (SCA)\n❌ **Scan failed or no results**\n\n`;
+            }
+            
+            comment += `---\n*View detailed results in the [Security tab](${context.payload.repository.html_url}/security/code-scanning)*`;
+            
+            // Check if comment already exists
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const existingComment = comments.find(comment => 
+              comment.body.includes('🛡️ Snyk Security Scan Results')
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
