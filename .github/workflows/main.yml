@@ -1,4 +1,4 @@
-name: Snyk Security
+name: Snyk Security PR
 on:
   pull_request:
     branches: ["demo*"]
