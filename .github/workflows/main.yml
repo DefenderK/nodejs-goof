@@ -54,12 +54,6 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       
-      # Run Snyk Open Source monitor (sends to Snyk dashboard)
-      - name: Snyk Open Source monitor
-        run: snyk monitor --all-projects
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      
       # Upload Snyk Code SARIF results to GitHub Code Scanning
       - name: Upload Snyk Code results to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
