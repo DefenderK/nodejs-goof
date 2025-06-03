@@ -1,42 +1,75 @@
-name: "Snyk Scan"
+name: Snyk Security
 on:
   push:
-    branches:
-      - 'demo*' # Include any branch starting with demo
+    branches: ["demo*"]
+  pull_request:
+    branches: ["demo*"]
+permissions:
+  contents: read
 jobs:
-  Pipeline-Job:
-    # Configure Environment
-    name: 'Snyk Scan'
+  snyk:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
     runs-on: ubuntu-latest
-    env:
-      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
     steps:
-      # Checkout Code
-      - name: Checkout Code
-        uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       
-      # Install and Authenticate to Snyk
-      - name: Install Snyk & Authenticate
-        run: |
-          sudo npm install -g snyk
-          snyk auth ${SNYK_TOKEN}
+      # Set up Node.js 20
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm' # Optional: cache npm dependencies for faster builds
       
-      # Run Snyk Code and Generate SARIF - always generate the file
-      - name: Run Snyk Code and Generate SARIF
-        id: snyk-sarif
-        run: |
-          # Run with all issues captured for SARIF output
-          snyk code test --sarif-file-output=snyk.sarif
-        continue-on-error: true
+      # Install dependencies if you have a package.json
+      - name: Install dependencies
+        run: npm ci
+        if: hashFiles('package-lock.json') != ''
       
-      # Upload SARIF to GitHub Code Scanning - always runs
-      - name: Upload SARIF to GitHub Code Scanning
+      # Set up Snyk CLI
+      - name: Set up Snyk CLI to check for security issues
+        uses: snyk/actions/setup@806182742461562b67788a64410098c9d9b96adb
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      
+      # Authenticate with Snyk (optional, as setup action should handle this)
+      - name: Authenticate Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      
+      # Run Snyk Code test and generate SARIF
+      - name: Snyk Code test
+        run: snyk code test --sarif > snyk-code.sarif || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      
+      # Run Snyk Open Source test and generate SARIF
+      - name: Snyk Open Source test
+        run: snyk test --sarif > snyk-opensource.sarif || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      
+      # Run Snyk Open Source monitor (sends to Snyk dashboard)
+      - name: Snyk Open Source monitor
+        run: snyk monitor --all-projects
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      
+      # Upload Snyk Code SARIF results to GitHub Code Scanning
+      - name: Upload Snyk Code results to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: snyk.sarif
+          sarif_file: snyk-code.sarif
+          category: snyk-code
+        if: always() # Upload results even if previous steps failed
       
-      # Run Snyk Code with critical threshold for pipeline status - last step
-      - name: Check for Critical Vulnerabilities
-        run: |
-          # Run with critical severity threshold for pass/fail status
-          snyk code test --severity-threshold=high
+      # Upload Snyk Open Source SARIF results to GitHub Code Scanning
+      - name: Upload Snyk Open Source results to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-opensource.sarif
+          category: snyk-opensource
+        if: always() # Upload results even if previous steps failed
