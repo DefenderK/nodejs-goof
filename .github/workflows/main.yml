@@ -1,7 +1,5 @@
 name: Snyk Security
 on:
-  push:
-    branches: ["demo*"]
   pull_request:
     branches: ["demo*"]
 permissions:
